@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth.routes');
+const catRoutes = require('./routes/cat.routes');  // ← 新增
+
 
 // 加载环境变量
 dotenv.config();
@@ -15,6 +17,8 @@ app.use(express.json());
 
 // 路由
 app.use('/api/auth', authRoutes);
+app.use('/api/cats', catRoutes);  // ← 新增
+
 
 // 健康检查接口
 app.get('/api/health', (req, res) => {
