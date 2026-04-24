@@ -1,24 +1,9 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const authMiddleware = require('../middleware/auth.middleware');
+const cloudinary = require('../config/cloudinary');
 
 const router = express.Router();
-
-const uploadDir = path.join(__dirname, '../../uploads/cats');
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const uniqueName = `${req.userId}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, uniqueName);
-  }
-});
 
 const fileFilter = (req, file, cb) => {
   if (!file.mimetype.startsWith('image/')) {
@@ -30,15 +15,34 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024
   }
 });
 
+const uploadBufferToCloudinary = (file, userId) => new Promise((resolve, reject) => {
+  const uploadStream = cloudinary.uploader.upload_stream(
+    {
+      folder: `cat-manager/${userId}`,
+      resource_type: 'image'
+    },
+    (error, result) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(result);
+    }
+  );
+
+  uploadStream.end(file.buffer);
+});
+
 router.post('/cat-photo', authMiddleware, (req, res) => {
-  upload.single('photo')(req, res, (error) => {
+  upload.single('photo')(req, res, async (error) => {
     if (error) {
       const message = error.code === 'LIMIT_FILE_SIZE'
         ? '图片不能超过 5MB'
@@ -50,12 +54,19 @@ router.post('/cat-photo', authMiddleware, (req, res) => {
       return res.status(400).json({ message: '请选择要上传的图片' });
     }
 
-    res.status(201).json({
-      message: '上传成功',
-      data: {
-        url: `/api/uploads/cats/${req.file.filename}`
-      }
-    });
+    try {
+      const result = await uploadBufferToCloudinary(req.file, req.userId);
+
+      res.status(201).json({
+        message: '上传成功',
+        data: {
+          url: result.secure_url
+        }
+      });
+    } catch (uploadError) {
+      console.error('Cloudinary 上传失败:', uploadError);
+      res.status(500).json({ message: '图片上传失败，请稍后重试' });
+    }
   });
 });
 
