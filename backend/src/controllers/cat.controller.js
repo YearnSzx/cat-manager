@@ -1,5 +1,28 @@
 const Cat = require('../models/Cat');
 
+const normalizePhotos = (photos, photo) => {
+  const nextPhotos = Array.isArray(photos)
+    ? photos.filter((item) => typeof item === 'string' && item.trim())
+    : [];
+
+  if (!nextPhotos.length && typeof photo === 'string' && photo.trim()) {
+    nextPhotos.push(photo.trim());
+  }
+
+  return nextPhotos;
+};
+
+const serializeCat = (cat) => {
+  const plainCat = cat.toObject ? cat.toObject() : cat;
+  const photos = normalizePhotos(plainCat.photos, plainCat.photo);
+
+  return {
+    ...plainCat,
+    photo: photos[0] || '',
+    photos
+  };
+};
+
 // 获取我的猫咪列表
 exports.getCats = async (req, res) => {
   try {
@@ -9,7 +32,7 @@ exports.getCats = async (req, res) => {
     
     res.json({
       message: '获取成功',
-      data: cats
+      data: cats.map(serializeCat)
     });
   } catch (error) {
     console.error('获取猫咪列表错误:', error);
@@ -34,7 +57,7 @@ exports.getCatById = async (req, res) => {
     
     res.json({
       message: '获取成功',
-      data: cat
+      data: serializeCat(cat)
     });
   } catch (error) {
     console.error('获取猫咪详情错误:', error);
@@ -48,7 +71,7 @@ exports.getCatById = async (req, res) => {
 // 创建猫咪
 exports.createCat = async (req, res) => {
   try {
-    const { name, breed, gender, birthDate, color, weight, isNeutered, photo, notes } = req.body;
+    const { name, breed, gender, birthDate, color, weight, isNeutered, photo, photos, notes } = req.body;
     
     // 验证必填字段
     if (!name || !breed || !gender || !birthDate) {
@@ -57,6 +80,8 @@ exports.createCat = async (req, res) => {
       });
     }
     
+    const normalizedPhotos = normalizePhotos(photos, photo);
+
     // 🔒 关键：从 token 中获取 userId
     const cat = await Cat.create({
       userId: req.userId,  // 自动关联当前用户
@@ -67,13 +92,14 @@ exports.createCat = async (req, res) => {
       color: color || '',
       weight: weight || 0,
       isNeutered: isNeutered || false,
-      photo: photo || '',
+      photo: normalizedPhotos[0] || '',
+      photos: normalizedPhotos,
       notes: notes || ''
     });
     
     res.status(201).json({
       message: '创建成功',
-      data: cat
+      data: serializeCat(cat)
     });
   } catch (error) {
     console.error('创建猫咪错误:', error);
@@ -87,7 +113,8 @@ exports.createCat = async (req, res) => {
 // 更新猫咪
 exports.updateCat = async (req, res) => {
   try {
-    const { name, breed, gender, birthDate, color, weight, isNeutered, photo, notes } = req.body;
+    const { name, breed, gender, birthDate, color, weight, isNeutered, photo, photos, notes } = req.body;
+    const normalizedPhotos = normalizePhotos(photos, photo);
     
     // 🔒 查找并更新（确保只能更新自己的猫）
     const cat = await Cat.findOneAndUpdate(
@@ -103,7 +130,8 @@ exports.updateCat = async (req, res) => {
         color,
         weight,
         isNeutered,
-        photo,
+        photo: normalizedPhotos[0] || '',
+        photos: normalizedPhotos,
         notes
       },
       { 
@@ -118,7 +146,7 @@ exports.updateCat = async (req, res) => {
     
     res.json({
       message: '更新成功',
-      data: cat
+      data: serializeCat(cat)
     });
   } catch (error) {
     console.error('更新猫咪错误:', error);
@@ -153,4 +181,3 @@ exports.deleteCat = async (req, res) => {
     });
   }
 };
-

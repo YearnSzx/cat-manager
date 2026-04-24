@@ -55,6 +55,11 @@ const catSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
+  photos: {
+    type: [String],
+    default: []
+  },
   
   notes: {
     type: String,

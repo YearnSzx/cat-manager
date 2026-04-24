@@ -1,9 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
+
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth.routes');
-const catRoutes = require('./routes/cat.routes');  // ← 新增
+const catRoutes = require('./routes/cat.routes');  // ←
+const uploadRoutes = require('./routes/upload.routes');
+
 
 
 // 加载环境变量
@@ -14,10 +18,13 @@ const app = express();
 // 中间件
 app.use(cors());
 app.use(express.json());
+app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
+
 
 // 路由
 app.use('/api/auth', authRoutes);
-app.use('/api/cats', catRoutes);  // ← 新增
+app.use('/api/cats', catRoutes);  //
+app.use('/api/upload', uploadRoutes);
 
 
 // 健康检查接口
