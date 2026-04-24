@@ -1,0 +1,83 @@
+:root {
+  --font-body: "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  --font-display: "Ma Shan Zheng", "Kaiti SC", "STKaiti", cursive;
+  --color-ink: #30251f;
+  --color-muted: #7f6a5d;
+  --color-soft: #fff8ee;
+  --color-cream: #fffaf1;
+  --color-card: rgba(255, 252, 244, 0.88);
+  --color-border: rgba(123, 86, 63, 0.16);
+  --color-coral: #ef7f61;
+  --color-honey: #f6bd5f;
+  --color-mint: #8bbf9f;
+  --shadow-soft: 0 24px 80px rgba(100, 65, 42, 0.14);
+  --shadow-card: 0 16px 44px rgba(116, 74, 48, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #fff8ed;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  background:
+    radial-gradient(circle at 10% 8%, rgba(246, 189, 95, 0.28), transparent 28%),
+    radial-gradient(circle at 92% 12%, rgba(139, 191, 159, 0.22), transparent 24%),
+    linear-gradient(135deg, #fff9ef 0%, #ffe9d7 48%, #f9f0df 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  background-image:
+    radial-gradient(circle, rgba(99, 63, 44, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(circle, rgba(239, 127, 97, 0.08) 1px, transparent 1px);
+  background-position: 0 0, 18px 18px;
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 82%);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.el-button {
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--color-coral);
+  --el-button-border-color: var(--color-coral);
+  --el-button-hover-bg-color: #f29374;
+  --el-button-hover-border-color: #f29374;
+  --el-button-active-bg-color: #db6749;
+  --el-button-active-border-color: #db6749;
+}
+
+.el-card {
+  --el-card-border-color: var(--color-border);
+  --el-card-border-radius: 28px;
+}
