@@ -14,9 +14,22 @@ const uploadRoutes = require('./routes/upload.routes');
 dotenv.config();
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // 中间件
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('CORS blocked for this origin'));
+  }
+}));
 app.use(express.json());
 app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
 
